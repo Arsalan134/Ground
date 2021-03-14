@@ -48,7 +48,7 @@ const byte batteryLevelIndex = 0;
 byte transmitData[4];
 byte recievedData[1];
 
-uint8_t oldL2Value, oldR2Value;
+byte oldL2Value = 0, oldR2Value = 0;
 
 unsigned long timeoutMilliSeconds = 500;
 unsigned long lastRecievedTime = millis();
@@ -100,8 +100,7 @@ void setup() {
 
 void printTransmitData() {
   Serial.print("Send: ");
-  for (unsigned long i = 0; i < sizeof(transmitData) / sizeof(transmitData[0]);
-    i++) {
+  for (unsigned long i = 0; i < sizeof(transmitData) / sizeof(transmitData[0]); i++) {
     Serial.print(transmitData[i]);
     Serial.print(" ");
   }
@@ -113,8 +112,7 @@ void printRecievedData() {
   // Serial.println(numberOfPackages);
 
   Serial.print("Recieved: ");
-  for (unsigned long i = 0; i < sizeof(recievedData) / sizeof(recievedData[0]);
-    i++) {
+  for (unsigned long i = 0; i < sizeof(recievedData) / sizeof(recievedData[0]); i++) {
     Serial.print(recievedData[i]);
     Serial.print(" ");
   }
@@ -313,17 +311,19 @@ void radioConnection() {
   // minAnalogReadFromBattery, maxAnalogReadFromBattery, 0, 7));
 
   // reset();
-
-  transmitData[rollIndex] = map(analogRead(xPin), 0, 1023, 0, 180);
-  delay(miniDelay);
-  transmitData[pitchIndex] = map(analogRead(yPin), 0, 1023, 0, 180);
+  reset();
+  transmitData[rollIndex] = byte(map(analogRead(xPin), 0, 1023, 0, 180));
+  transmitData[pitchIndex] = byte(map(analogRead(yPin), 0, 1023, 0, 180));
 
   // batteryLevelDemo(batteryValue);
 
-  delay(miniDelay);
   // Throttle
   if (!emergencyStop) {
-    transmitData[throttleIndex] = max(oldR2Value, map(analogRead(sliderPin), 0, 1023, 0, 180));
+    transmitData[rollIndex] = 0;
+    transmitData[pitchIndex] = 0;
+    transmitData[yawIndex] = 0;
+
+    transmitData[throttleIndex] = byte(max(oldR2Value, byte(map(analogRead(sliderPin), 0, 1023, 0, 180))));
   }
 
   // Yaw
