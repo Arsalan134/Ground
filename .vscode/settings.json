@@ -1,0 +1,13 @@
+{
+    "C_Cpp.formatting": "vcFormat",
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.function": "sameLine",
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.block": "sameLine",
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.lambda": "sameLine",
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.namespace": "sameLine",
+    "C_Cpp.vcFormat.newLine.beforeOpenBrace.type": "sameLine",
+    "C_Cpp.vcFormat.indent.lambdaBracesWhenParameter": false,
+    "C_Cpp.vcFormat.indent.namespaceContents": false,
+    "C_Cpp.vcFormat.newLine.beforeElse": false,
+    "C_Cpp.vcFormat.indent.caseContents": false,
+    "editor.overviewRulerBorder": false,
+}
