@@ -42,8 +42,6 @@ RF24 radio(radioPin, radioPin2);
 
 byte addresses[][6] = { "1Node", "2Node" };
 
-const byte rollIndex = 0, pitchIndex = 1, yawIndex = 2, throttleIndex = 3;
-const byte batteryLevelIndex = 0;
 
 byte transmitData[4];
 byte recievedData[1];
@@ -228,10 +226,11 @@ void ps4() {
     //   Serial.print(F("\r\nCross"));
     //   PS4.setLedFlash(10, 10); // Set it to blink rapidly
     // }
-    // if (PS4.getButtonClick(SQUARE)) {
-    //   Serial.print(F("\r\nSquare"));
-    //   PS4.setLedFlash(0, 0); // Turn off blinking
-    // }
+    if (PS4.getButtonClick(SQUARE)) {
+      Serial.print(F("\r\nSquare"));
+      // PS4.setLedFlash(0, 0); // Turn off blinking
+      emergencyStop = true;
+    }
 
     // if (PS4.getButtonClick(UP)) {
     //   Serial.print(F("\r\nUp"));
@@ -312,8 +311,8 @@ void radioConnection() {
 
   // reset();
   reset();
-  transmitData[rollIndex] = byte(map(analogRead(xPin), 0, 1023, 0, 180));
-  transmitData[pitchIndex] = byte(map(analogRead(yPin), 0, 1023, 0, 180));
+  transmitData[rollIndex] = map(analogRead(xPin), 0, 1023, 0, 180);
+  transmitData[pitchIndex] = map(analogRead(yPin), 0, 1023, 0, 180);
 
   // batteryLevelDemo(batteryValue);
 
@@ -323,7 +322,9 @@ void radioConnection() {
     transmitData[pitchIndex] = 0;
     transmitData[yawIndex] = 0;
 
-    transmitData[throttleIndex] = byte(max(oldR2Value, byte(map(analogRead(sliderPin), 0, 1023, 0, 180))));
+    transmitData[throttleIndex] = max(oldR2Value, map(analogRead(sliderPin), 0, 1023, 0, 180));
+  } else {
+    transmitData[throttleIndex] = 0;
   }
 
   // Yaw

@@ -31,6 +31,14 @@
 #define minAnalogReadFromBattery 750
 #define maxAnalogReadFromBattery 1000
 
+
+#define rollIndex 0
+#define pitchIndex 1
+#define yawIndex 2
+#define throttleIndex 3
+
+#define batteryLevelIndex 0
+
 // int numberOfPackages = 0;
 // int maxPackages = 0;
 
