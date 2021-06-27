@@ -1,8 +1,6 @@
 
 // Pinssss
 #define sliderPin A0
-#define yPin A1
-#define xPin A2
 
 #define batteryPin A3
 
@@ -31,6 +29,7 @@
 #define minAnalogReadFromBattery 750
 #define maxAnalogReadFromBattery 1000
 
+#define timeoutMilliSeconds 500
 
 #define rollIndex 0
 #define pitchIndex 1
@@ -39,8 +38,7 @@
 
 #define batteryLevelIndex 0
 
-// int numberOfPackages = 0;
-// int maxPackages = 0;
+
 
 // void setupTimer()
 // {

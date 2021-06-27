@@ -20,7 +20,9 @@
 
 USB Usb;
 // USBHub Hub1(&Usb); // Some dongles have a hub inside
-BTD Btd(&Usb); // You have to create the Bluetooth Dongle instance like so
+// BTD Btd(&Usb); // You have to create the Bluetooth Dongle instance like so
+
+PS4USB PS4(&Usb);
 
 /* You can create the instance of the PS4BT class in two ways */
 // This will start an inquiry and then pair with the PS4 controller - you only
@@ -33,26 +35,26 @@ BTD Btd(&Usb); // You have to create the Bluetooth Dongle instance like so
 // PS4BT PS4(&Btd);
 
 
-PS4USB PS4(&Usb);
-
-
 bool printAngle, printTouch;
 
 RF24 radio(radioPin, radioPin2);
 
 byte addresses[][6] = { "1Node", "2Node" };
 
-
 byte transmitData[4];
 byte recievedData[1];
 
 byte oldL2Value = 0, oldR2Value = 0;
 
-unsigned long timeoutMilliSeconds = 500;
+
 unsigned long lastRecievedTime = millis();
 unsigned long currentTime = millis();
+unsigned long elapsedTime = 0;
 
 bool emergencyStop = false;
+
+// int numberOfPackages = 0;
+// int maxPackages = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -147,7 +149,7 @@ void reset() {
   transmitData[rollIndex] = 127;
   transmitData[pitchIndex] = 127;
   transmitData[yawIndex] = 127;
-  transmitData[throttleIndex] = 0;
+  // transmitData[throttleIndex] = 0; // ???
 
   recievedData[batteryLevelIndex] = 0;
 }
@@ -182,31 +184,25 @@ void ps4() {
   Usb.Task();
 
   if (PS4.connected()) {
-    // if (PS4.getAnalogHat(LeftHatX) > 137 || PS4.getAnalogHat(LeftHatX) < 117
-    // ||
-    //     PS4.getAnalogHat(LeftHatY) > 137 || PS4.getAnalogHat(LeftHatY) < 117
-    //     || PS4.getAnalogHat(RightHatX) > 137 || PS4.getAnalogHat(RightHatX) <
-    //     117 || PS4.getAnalogHat(RightHatY) > 137 ||
-    //     PS4.getAnalogHat(RightHatY) < 117) {
-    //   Serial.print(F("\r\nLeftHatX: "));
-    //   Serial.print(PS4.getAnalogHat(LeftHatX));
-    //   Serial.print(F("\tLeftHatY: "));
-    //   Serial.print(PS4.getAnalogHat(LeftHatY));
-    //   Serial.print(F("\tRightHatX: "));
-    //   Serial.print(PS4.getAnalogHat(RightHatX));
-    //   Serial.print(F("\tRightHatY: "));
-    //   Serial.print(PS4.getAnalogHat(RightHatY));
+
+    if (PS4.getAnalogHat(LeftHatX) > 137 || PS4.getAnalogHat(LeftHatX) < 117)
+      transmitData[rollIndex] = PS4.getAnalogHat(LeftHatX);
+
+    if (PS4.getAnalogHat(RightHatY) > 137 || PS4.getAnalogHat(RightHatY) < 117)
+      transmitData[pitchIndex] = PS4.getAnalogHat(RightHatY);
+
+    if (PS4.getAnalogHat(RightHatX) > 137 || PS4.getAnalogHat(RightHatX) < 117)
+      transmitData[yawIndex] = PS4.getAnalogHat(RightHatX);
+
+    // if (PS4.getAnalogButton(L2) || PS4.getAnalogButton(R2)) {
+    //   Serial.print(F("\r\nL2: "));
+    //   Serial.print(PS4.getAnalogButton(L2));
+    //   Serial.print(F("\tR2: "));
+    //   Serial.print(PS4.getAnalogButton(R2));
     // }
 
-    if (PS4.getAnalogButton(L2) || PS4.getAnalogButton(R2)) { // These are the only analog buttons on the PS4 controller
-      Serial.print(F("\r\nL2: "));
-      Serial.print(PS4.getAnalogButton(L2));
-      Serial.print(F("\tR2: "));
-      Serial.print(PS4.getAnalogButton(R2));
-    }
-
-    if (PS4.getAnalogButton(L2) != oldL2Value || PS4.getAnalogButton(R2) != oldR2Value) // Only write value if it's different
-      PS4.setRumbleOn(PS4.getAnalogButton(L2), PS4.getAnalogButton(R2));
+    // if (PS4.getAnalogButton(L2) || PS4.getAnalogButton(R2))
+    //   PS4.setRumbleOn(PS4.getAnalogButton(L2), PS4.getAnalogButton(R2));
 
     oldL2Value = PS4.getAnalogButton(L2);
     oldR2Value = PS4.getAnalogButton(R2);
@@ -222,15 +218,18 @@ void ps4() {
     //   Serial.print(F("\r\nCircle"));
     //   PS4.setRumbleOn(RumbleHigh);
     // }
-    // if (PS4.getButtonClick(CROSS)) {
-    //   Serial.print(F("\r\nCross"));
-    //   PS4.setLedFlash(10, 10); // Set it to blink rapidly
-    // }
+
     if (PS4.getButtonClick(SQUARE)) {
-      Serial.print(F("\r\nSquare"));
       // PS4.setLedFlash(0, 0); // Turn off blinking
       emergencyStop = true;
+
     }
+
+    if (PS4.getButtonClick(CROSS)) {
+      // PS4.setLedFlash(10, 10); // Set it to blink rapidly
+      emergencyStop = false;
+    }
+
 
     // if (PS4.getButtonClick(UP)) {
     //   Serial.print(F("\r\nUp"));
@@ -309,32 +308,19 @@ void radioConnection() {
   // groundBatteryDisplay.displayLevel(map(batteryValue,
   // minAnalogReadFromBattery, maxAnalogReadFromBattery, 0, 7));
 
-  // reset();
-  reset();
-  transmitData[rollIndex] = map(analogRead(xPin), 0, 1023, 0, 180);
-  transmitData[pitchIndex] = map(analogRead(yPin), 0, 1023, 0, 180);
+  transmitData[rollIndex] = map(transmitData[rollIndex], 0, 255, 0, 180);
+  transmitData[pitchIndex] = map(transmitData[pitchIndex], 0, 255, 0, 180);
+  transmitData[yawIndex] = map(transmitData[yawIndex], 0, 255, 0, 180);
+  transmitData[throttleIndex] = emergencyStop ? 0 : max(map(oldR2Value, 0, 255, 0, 180), map(analogRead(sliderPin), 0, 1023, 0, 180));
 
   // batteryLevelDemo(batteryValue);
-
-  // Throttle
-  if (!emergencyStop) {
-    transmitData[rollIndex] = 0;
-    transmitData[pitchIndex] = 0;
-    transmitData[yawIndex] = 0;
-
-    transmitData[throttleIndex] = max(oldR2Value, map(analogRead(sliderPin), 0, 1023, 0, 180));
-  } else {
-    transmitData[throttleIndex] = 0;
-  }
-
-  // Yaw
-  // transmitData[tData.yaw] = map(analogRead(), 0, 255, 128, 255);
 
   //  recievedData[rData.vibration] = (recievedData[rData.vibration] <
   //  vibrationMinThreshold) ? 0 : recievedData[rData.vibration];
 
   //    emergencyStop = !emergencyStop;
 
+  radio.stopListening();
   if (!radio.write(&transmitData, sizeof(transmitData))) {
     Serial.println("Failed to transmit 889");
   } else {
@@ -342,23 +328,30 @@ void radioConnection() {
     delay(delayTime);
   }
 
-  // currentTime = millis();
+  currentTime = millis();
+  elapsedTime = currentTime - lastRecievedTime;
 
-  // if (currentTime - lastRecievedTime > timeoutMilliSeconds) {
-  //   Serial.println("TIMEOUT");
-  // }
+  // Signal from Airplane
+  if (radio.available()) {
+    radio.read(&recievedData, sizeof(recievedData));
+    lastRecievedTime = millis();
+    printRecievedData();
+    PS4.setRumbleOn(0, 0);
+    PS4.setLed(emergencyStop ? Red : Off);
+  } else if (elapsedTime >= timeoutMilliSeconds) {
+    PS4.setRumbleOn(100, 100);
+    PS4.setLed(Purple);
+    PS4.setLedFlash(50, 50);
+  } else if (elapsedTime >= timeoutMilliSeconds / 3) {
+    PS4.setRumbleOn(20, 20);
+    PS4.setLed(Purple);
+  }
 
-  // if (radio.available()) {
-  //   radio.read(&recievedData, sizeof(recievedData));
-  //   radio.stopListening();
 
-  //   lastRecievedTime = millis();
-  //   numberOfPackages++;
-  //   printRecievedData();
-  // }
 }
 
 void loop() {
+  reset();
   ps4();
   radioConnection();
 }
