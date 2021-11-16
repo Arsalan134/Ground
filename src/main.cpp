@@ -3,20 +3,20 @@
  For more information visit my blog: http://blog.tkjelectronics.dk/ or
  send me an e-mail:  kristianl@tkjelectronics.com
  */
-#include "RF24.h"
 #include <Arduino.h>
-#include <PS4BT.h>
+// #include <PS4BT.h>
 #include <PS4USB.h>
 #include <usbhub.h>
+#include "RF24.h"
  // #include "TM1651.h"
 #include "printf.h"
 #include <definitions.h>
 
 // Satisfy the IDE, which needs to see the include statment in the ino too.
-#ifdef dobogusinclude
-#include <spi4teensy3.h>
-#endif
-#include <SPI.h>
+// #ifdef dobogusinclude
+// #include <spi4teensy3.h>
+// #endif
+// #include <SPI.h>
 
 USB Usb;
 // USBHub Hub1(&Usb); // Some dongles have a hub inside
@@ -68,6 +68,7 @@ void setup() {
   radio.setChannel(112);
   radio.openWritingPipe(addresses[1]);
   radio.openReadingPipe(1, addresses[0]);
+  radio.setDataRate(RF24_250KBPS);
   radio.stopListening();
 
   radio.printDetails();
@@ -75,19 +76,18 @@ void setup() {
   pinMode(airplaneBatteryDIOPin, OUTPUT);
   pinMode(airplaneBatteryClockPin, OUTPUT);
 
-#if !defined(__MIPSEL__)
-  while (!Serial)
-    ;   // Wait for serial port to connect - used on Leonardo, Teensy and other
-        // boards with built-in USB CDC serial connection
-#endif
+// #if !defined(__MIPSEL__)
+//   while (!Serial)
+//     ;   // Wait for serial port to connect - used on Leonardo, Teensy and other
+//         // boards with built-in USB CDC serial connection
+// #endif
 
-  if (Usb.Init() == -1) {
-    Serial.print(F("\r\nOSC did not start"));
-    while (1)
-      ; // Halt
+  while (Usb.Init() == -1) {
+    Serial.println(F("OSC did not start"));
+    delay(500);
   }
 
-  Serial.print(F("\r\nPS4 Bluetooth Library Started\n"));
+  // Serial.print(F("\r\nPS4 Bluetooth Library Started\n"));
 
   // signalDisplay.begin();
   // signalDisplay.setLevel(0);
@@ -300,6 +300,7 @@ void ps4() {
 }
 
 void radioConnection() {
+  
   // signalDemo();
   // blink();  // 2 green, 2 red
 
@@ -325,8 +326,10 @@ void radioConnection() {
     Serial.println("Failed to transmit 889");
   } else {
     // printTransmitData();
+    radio.startListening();
     delay(delayTime);
   }
+
 
   currentTime = millis();
   elapsedTime = currentTime - lastRecievedTime;
@@ -335,18 +338,21 @@ void radioConnection() {
   if (radio.available()) {
     radio.read(&recievedData, sizeof(recievedData));
     lastRecievedTime = millis();
-    printRecievedData();
+    // printRecievedData();
     PS4.setRumbleOn(0, 0);
-    PS4.setLed(emergencyStop ? Red : Off);
+    PS4.setLed(emergencyStop ? Blue : Off);
   } else if (elapsedTime >= timeoutMilliSeconds) {
-    PS4.setRumbleOn(100, 100);
-    PS4.setLed(Purple);
+    // PS4.setRumbleOn(100, 100);
+    PS4.setLed(Red);
     PS4.setLedFlash(50, 50);
   } else if (elapsedTime >= timeoutMilliSeconds / 3) {
-    PS4.setRumbleOn(20, 20);
+    // PS4.setRumbleOn(20, 20);
     PS4.setLed(Purple);
   }
 
+  
+  // Serial.print("Elapsed: ");
+  // Serial.println(elapsedTime);
 
 }
 
