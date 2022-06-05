@@ -1,28 +1,18 @@
-
-// Pinssss
-#define sliderPin A0
-
 // #define batteryPin A3
-
 // #define airplaneBatteryDIOPin A6
 // #define airplaneBatteryClockPin A7
-
 // #define groundBatteryDIOPin 2
 // #define groundBatteryClockPin 3
-
 // #define signalDisplayDIOPin 4
 // #define signalDisplayClockPin 5
 
-#define RadioChipEnabled 4
-#define SCN 5
-#define buzzerPin 6
 /*
  * 2    SDA
  * 3    SCL
  * 4    Radio CE
  * 5    Radio SCN
  * 6    Buzzer
- * 7    USB HOST RESET
+ * 7    -
  * 8    USB HOST GPX
  * 9    USB HOST INT
  * 10   USB HOST SS
@@ -31,6 +21,11 @@
  * 13   -
  */
 
+#define sliderPin A0
+
+#define RadioChipEnabled 4
+#define SCN 5
+#define BuzzerPin 6
 #define USBHostSS 10
 
 // Objects
