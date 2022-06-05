@@ -15,10 +15,23 @@
 
 #define RadioChipEnabled 4
 #define SCN 5
+#define buzzerPin 6
+/*
+ * 2    SDA
+ * 3    SCL
+ * 4    Radio CE
+ * 5    Radio SCN
+ * 6    Buzzer
+ * 7    USB HOST RESET
+ * 8    USB HOST GPX
+ * 9    USB HOST INT
+ * 10   USB HOST SS
+ * 11   -
+ * 12   -
+ * 13   -
+ */
 
 #define USBHostSS 10
-
-#define buzzerPin 6
 
 // Objects
 // Grove_LED_Bar signalDisplay(signalDisplayClockPin, signalDisplayDIOPin,
