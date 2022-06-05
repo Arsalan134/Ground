@@ -5,18 +5,12 @@
  */
 #include <Arduino.h>
 // #include <PS4BT.h>
+#include "RF24.h"
 #include <PS4USB.h>
 #include <usbhub.h>
-#include "RF24.h"
- // #include "TM1651.h"
+// #include "TM1651.h"
+#include "definitions.h"
 #include "printf.h"
-#include <definitions.h>
-
-// Satisfy the IDE, which needs to see the include statment in the ino too.
-// #ifdef dobogusinclude
-// #include <spi4teensy3.h>
-// #endif
-// #include <SPI.h>
 
 USB Usb;
 // USBHub Hub1(&Usb); // Some dongles have a hub inside
@@ -34,18 +28,16 @@ PS4USB PS4(&Usb);
 // button on the device
 // PS4BT PS4(&Btd);
 
-
 bool printAngle, printTouch;
 
-RF24 radio(radioPin, radioPin2);
+RF24 radio(RadioChipEnabled, SCN);
 
-byte addresses[][6] = { "1Node", "2Node" };
+byte addresses[][6] = {"1Node", "2Node"};
 
 byte transmitData[4];
 byte recievedData[1];
 
 byte oldL2Value = 0, oldR2Value = 0;
-
 
 unsigned long lastRecievedTime = millis();
 unsigned long currentTime = millis();
@@ -73,14 +65,15 @@ void setup() {
 
   radio.printDetails();
 
-  pinMode(airplaneBatteryDIOPin, OUTPUT);
-  pinMode(airplaneBatteryClockPin, OUTPUT);
+  // pinMode(airplaneBatteryDIOPin, OUTPUT);
+  // pinMode(airplaneBatteryClockPin, OUTPUT);
 
-// #if !defined(__MIPSEL__)
-//   while (!Serial)
-//     ;   // Wait for serial port to connect - used on Leonardo, Teensy and other
-//         // boards with built-in USB CDC serial connection
-// #endif
+  // #if !defined(__MIPSEL__)
+  //   while (!Serial)
+  //     ;   // Wait for serial port to connect - used on Leonardo, Teensy and
+  //     other
+  //         // boards with built-in USB CDC serial connection
+  // #endif
 
   while (Usb.Init() == -1) {
     Serial.println(F("OSC did not start"));
@@ -100,7 +93,8 @@ void setup() {
 
 void printTransmitData() {
   Serial.print("Send: ");
-  for (unsigned long i = 0; i < sizeof(transmitData) / sizeof(transmitData[0]); i++) {
+  for (unsigned long i = 0; i < sizeof(transmitData) / sizeof(transmitData[0]);
+       i++) {
     Serial.print(transmitData[i]);
     Serial.print(" ");
   }
@@ -112,7 +106,8 @@ void printRecievedData() {
   // Serial.println(numberOfPackages);
 
   Serial.print("Recieved: ");
-  for (unsigned long i = 0; i < sizeof(recievedData) / sizeof(recievedData[0]); i++) {
+  for (unsigned long i = 0; i < sizeof(recievedData) / sizeof(recievedData[0]);
+       i++) {
     Serial.print(recievedData[i]);
     Serial.print(" ");
   }
@@ -222,14 +217,12 @@ void ps4() {
     if (PS4.getButtonClick(SQUARE)) {
       // PS4.setLedFlash(0, 0); // Turn off blinking
       emergencyStop = true;
-
     }
 
     if (PS4.getButtonClick(CROSS)) {
       // PS4.setLedFlash(10, 10); // Set it to blink rapidly
       emergencyStop = false;
     }
-
 
     // if (PS4.getButtonClick(UP)) {
     //   Serial.print(F("\r\nUp"));
@@ -300,7 +293,7 @@ void ps4() {
 }
 
 void radioConnection() {
-  
+
   // signalDemo();
   // blink();  // 2 green, 2 red
 
@@ -312,7 +305,10 @@ void radioConnection() {
   transmitData[rollIndex] = map(transmitData[rollIndex], 0, 255, 0, 180);
   transmitData[pitchIndex] = map(transmitData[pitchIndex], 0, 255, 0, 180);
   transmitData[yawIndex] = map(transmitData[yawIndex], 0, 255, 0, 180);
-  transmitData[throttleIndex] = emergencyStop ? 0 : max(map(oldR2Value, 0, 255, 0, 180), map(analogRead(sliderPin), 0, 1023, 0, 180));
+  transmitData[throttleIndex] =
+      emergencyStop ? 0
+                    : max(map(oldR2Value, 0, 255, 0, 180),
+                          map(analogRead(sliderPin), 0, 1023, 0, 180));
 
   // batteryLevelDemo(batteryValue);
 
@@ -329,7 +325,6 @@ void radioConnection() {
     radio.startListening();
     delay(delayTime);
   }
-
 
   currentTime = millis();
   elapsedTime = currentTime - lastRecievedTime;
@@ -350,10 +345,8 @@ void radioConnection() {
     PS4.setLed(Purple);
   }
 
-  
   // Serial.print("Elapsed: ");
   // Serial.println(elapsedTime);
-
 }
 
 void loop() {

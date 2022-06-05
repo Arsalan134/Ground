@@ -2,19 +2,23 @@
 // Pinssss
 #define sliderPin A0
 
-#define batteryPin A3
+// #define batteryPin A3
 
-#define airplaneBatteryDIOPin A6
-#define airplaneBatteryClockPin A7
+// #define airplaneBatteryDIOPin A6
+// #define airplaneBatteryClockPin A7
 
-#define groundBatteryDIOPin 2
-#define groundBatteryClockPin 3
+// #define groundBatteryDIOPin 2
+// #define groundBatteryClockPin 3
 
-#define signalDisplayDIOPin 4
-#define signalDisplayClockPin 5
+// #define signalDisplayDIOPin 4
+// #define signalDisplayClockPin 5
 
-#define radioPin 7
-#define radioPin2 8
+#define RadioChipEnabled 4
+#define SCN 5
+
+#define USBHostSS 10
+
+#define buzzerPin 6
 
 // Objects
 // Grove_LED_Bar signalDisplay(signalDisplayClockPin, signalDisplayDIOPin,
@@ -37,8 +41,6 @@
 #define throttleIndex 3
 
 #define batteryLevelIndex 0
-
-
 
 // void setupTimer()
 // {
