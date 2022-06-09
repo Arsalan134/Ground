@@ -41,7 +41,9 @@ void setup() {
 
 void loop() {
   reset();
+
   ps4();
+
   radioConnection();
 }
 
@@ -226,7 +228,6 @@ void radioConnection() {
   } else {
     // printTransmitData();
     radio.startListening();
-    delay(delayTime);
   }
 
   currentTime = millis();
