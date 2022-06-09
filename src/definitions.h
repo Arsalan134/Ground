@@ -6,6 +6,13 @@
 // #define signalDisplayDIOPin 4
 // #define signalDisplayClockPin 5
 
+#include <Arduino.h>
+// #include <PS4BT.h>
+#include "RF24.h"
+#include <PS4USB.h>
+#include <usbhub.h>
+// #include "TM1651.h"
+#include "printf.h"
 /*
  * 2    SDA
  * 3    SCL
@@ -13,7 +20,7 @@
  * 5    Radio SCN
  * 6    Buzzer
  * 7    -
- * 8    USB HOST GPX
+ * 8    -
  * 9    USB HOST INT
  * 10   USB HOST SS
  * 11   -
@@ -50,24 +57,37 @@
 
 #define batteryLevelIndex 0
 
-// void setupTimer()
-// {
-//   cli();
-//   // set timer1 interrupt at 1Hz
-//   TCCR1A = 0; // set entire TCCR1A register to 0
-//   TCCR1B = 0; // same for TCCR1B
-//   TCNT1 = 0;  // initialize counter value to 0
-//   // set compare match register for 1hz increments
-//   OCR1A = 15624; // = (16*10^6) / (1*1024) - 1 (must be <65536)
-//   // turn on CTC mode
-//   TCCR1B |= (1 << WGM12);
-//   // Set CS12 and CS10 bits for 1024 prescaler
-//   TCCR1B |= (1 << CS12) | (1 << CS10);
-//   // enable timer compare interrupt
-//   TIMSK1 |= (1 << OCIE1A);
-//   sei();
-// }
+USB Usb;
+// USBHub Hub1(&Usb); // Some dongles have a hub inside
+// BTD Btd(&Usb); // You have to create the Bluetooth Dongle instance like so
 
+PS4USB PS4(&Usb);
+
+bool printAngle, printTouch;
+
+RF24 radio(RadioChipEnabled, SCN);
+
+byte addresses[][6] = {"1Node", "2Node"};
+
+byte transmitData[4];
+byte recievedData[1];
+
+byte oldL2Value = 0, oldR2Value = 0;
+
+unsigned long lastRecievedTime = millis();
+unsigned long currentTime = millis();
+unsigned long elapsedTime = 0;
+
+bool emergencyStop = false;
+
+void printTransmitData();
+void printRecievedData();
+void reset();
+void ps4();
+void radioConnection();
+
+// int numberOfPackages = 0;
+// int maxPackages = 0;
 // ISR(TIMER1_COMPA_vect) {
 //   // timer1 interrupt 1Hz toggles pin 13 (LED)
 //   // generates pulse wave of frequency 1Hz/2 = 0.5kHz (takes two cycles for

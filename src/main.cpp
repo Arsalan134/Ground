@@ -3,50 +3,8 @@
  For more information visit my blog: http://blog.tkjelectronics.dk/ or
  send me an e-mail:  kristianl@tkjelectronics.com
  */
-#include <Arduino.h>
-// #include <PS4BT.h>
-#include "RF24.h"
-#include <PS4USB.h>
-#include <usbhub.h>
-// #include "TM1651.h"
+
 #include "definitions.h"
-#include "printf.h"
-
-USB Usb;
-// USBHub Hub1(&Usb); // Some dongles have a hub inside
-// BTD Btd(&Usb); // You have to create the Bluetooth Dongle instance like so
-
-PS4USB PS4(&Usb);
-
-/* You can create the instance of the PS4BT class in two ways */
-// This will start an inquiry and then pair with the PS4 controller - you only
-// have to do this once You will need to hold down the PS and Share button at
-// the same time, the PS4 controller will then start to blink rapidly indicating
-// that it is in pairing mode
-// PS4BT PS4(&Btd, PAIR);
-// After that you can simply create the instance like so and then press the PS
-// button on the device
-// PS4BT PS4(&Btd);
-
-bool printAngle, printTouch;
-
-RF24 radio(RadioChipEnabled, SCN);
-
-byte addresses[][6] = {"1Node", "2Node"};
-
-byte transmitData[4];
-byte recievedData[1];
-
-byte oldL2Value = 0, oldR2Value = 0;
-
-unsigned long lastRecievedTime = millis();
-unsigned long currentTime = millis();
-unsigned long elapsedTime = 0;
-
-bool emergencyStop = false;
-
-// int numberOfPackages = 0;
-// int maxPackages = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -65,22 +23,12 @@ void setup() {
 
   radio.printDetails();
 
-  // pinMode(airplaneBatteryDIOPin, OUTPUT);
-  // pinMode(airplaneBatteryClockPin, OUTPUT);
-
-  // #if !defined(__MIPSEL__)
-  //   while (!Serial)
-  //     ;   // Wait for serial port to connect - used on Leonardo, Teensy and
-  //     other
-  //         // boards with built-in USB CDC serial connection
-  // #endif
-
   while (Usb.Init() == -1) {
     Serial.println(F("OSC did not start"));
     delay(500);
   }
 
-  // Serial.print(F("\r\nPS4 Bluetooth Library Started\n"));
+  Serial.println("PS4 Bluetooth Library Started");
 
   // signalDisplay.begin();
   // signalDisplay.setLevel(0);
@@ -89,6 +37,12 @@ void setup() {
   // airplaneBatteryDisplay.init();
 
   // setupTimer();
+}
+
+void loop() {
+  reset();
+  ps4();
+  radioConnection();
 }
 
 void printTransmitData() {
@@ -114,32 +68,6 @@ void printRecievedData() {
   Serial.println();
 }
 
-// void signalDemo() {
-//   for (int i = 0; i <= 10; i++) {
-//     signalDisplay.setLed(i, 1);
-//     delay(50);
-//   }
-
-//   for (int i = 10; i >= 0; i--) {
-//     signalDisplay.setLed(i, 0);
-//     delay(50);
-//   }
-// }
-
-// void blink() {
-//   for (int i = 0; i <= 7; i++) {
-//     groundBatteryDisplay.displayLevel(i);
-//     delay(50);
-//     airplaneBatteryDisplay.displayLevel(i);
-//   }
-
-//   for (int i = 7; i >= 0; i--) {
-//     groundBatteryDisplay.displayLevel(i);
-//     delay(50);
-//     airplaneBatteryDisplay.displayLevel(i);
-//   }
-// }
-
 void reset() {
   transmitData[rollIndex] = 127;
   transmitData[pitchIndex] = 127;
@@ -148,31 +76,6 @@ void reset() {
 
   recievedData[batteryLevelIndex] = 0;
 }
-
-// float map(float x, float in_min, float in_max, float out_min, float out_max)
-// {
-//   if (x >= in_max) return out_max;
-//   if (x <= in_min) return out_min;
-//   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-// }
-
-// Recieves analog value from battery and shows it via displays
-// void batteryLevelDemo(int value) {
-//   int tis = value / 1000;
-//   int sto = (value - tis * 1000) / 100;
-//   int dec = (value - sto * 100) / 10;
-//   int ed = (value - sto * 100) - 10 * dec;
-
-//   airplaneBatteryDisplay.displayLevel(ed);
-//   groundBatteryDisplay.displayLevel(dec);
-//   signalDisplay.setLevel(value / 100);
-
-//   Serial.println(value);
-//   Serial.println(sto);
-//   Serial.println(dec);
-//   Serial.println(ed);
-//   Serial.println();
-// }
 
 void ps4() {
 
@@ -349,8 +252,63 @@ void radioConnection() {
   // Serial.println(elapsedTime);
 }
 
-void loop() {
-  reset();
-  ps4();
-  radioConnection();
-}
+// pinMode(airplaneBatteryDIOPin, OUTPUT);
+// pinMode(airplaneBatteryClockPin, OUTPUT);
+
+// #if !defined(__MIPSEL__)
+//   while (!Serial)
+//     ;   // Wait for serial port to connect - used on Leonardo, Teensy and
+//     other
+//         // boards with built-in USB CDC serial connection
+// #endif
+
+// void signalDemo() {
+//   for (int i = 0; i <= 10; i++) {
+//     signalDisplay.setLed(i, 1);
+//     delay(50);
+//   }
+
+//   for (int i = 10; i >= 0; i--) {
+//     signalDisplay.setLed(i, 0);
+//     delay(50);
+//   }
+// }
+
+// void blink() {
+//   for (int i = 0; i <= 7; i++) {
+//     groundBatteryDisplay.displayLevel(i);
+//     delay(50);
+//     airplaneBatteryDisplay.displayLevel(i);
+//   }
+
+//   for (int i = 7; i >= 0; i--) {
+//     groundBatteryDisplay.displayLevel(i);
+//     delay(50);
+//     airplaneBatteryDisplay.displayLevel(i);
+//   }
+// }
+
+// float map(float x, float in_min, float in_max, float out_min, float out_max)
+// {
+//   if (x >= in_max) return out_max;
+//   if (x <= in_min) return out_min;
+//   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+// }
+
+// Recieves analog value from battery and shows it via displays
+// void batteryLevelDemo(int value) {
+//   int tis = value / 1000;
+//   int sto = (value - tis * 1000) / 100;
+//   int dec = (value - sto * 100) / 10;
+//   int ed = (value - sto * 100) - 10 * dec;
+
+//   airplaneBatteryDisplay.displayLevel(ed);
+//   groundBatteryDisplay.displayLevel(dec);
+//   signalDisplay.setLevel(value / 100);
+
+//   Serial.println(value);
+//   Serial.println(sto);
+//   Serial.println(dec);
+//   Serial.println(ed);
+//   Serial.println();
+// }
