@@ -6,6 +6,12 @@
 // #define signalDisplayDIOPin 4
 // #define signalDisplayClockPin 5
 
+/*
+ Example sketch for the PS4 USB library - developed by Kristian Lauszus
+ For more information visit my blog: http://blog.tkjelectronics.dk/ or
+ send me an e-mail:  kristianl@tkjelectronics.com
+ */
+
 #include <Arduino.h>
 // #include <PS4BT.h>
 #include "RF24.h"
