@@ -1,12 +1,19 @@
 #include "definitions.h"
 
 void setup() {
-
   Serial.begin(115200);
 
   printf_begin();
 
-  radio.begin();
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);  // Turn Of LED
+
+  while (!radio.begin()) {
+    Serial.println("Radio hardware is not responding!");
+    delay(500);
+  }
+
+  Serial.println("Radio is working");
 
   radio.setAutoAck(false);
   radio.setPALevel(RF24_PA_MAX);
@@ -18,12 +25,20 @@ void setup() {
 
   radio.printDetails();
 
-  while (Usb.Init() == -1) {
-    Serial.println(F("OSC did not start"));
-    delay(500);
+#if !defined(__MIPSEL__)
+  while (!Serial) {
+    delay(100);  // Wait for serial port to connect - used on Leonardo, Teensy
+                 // and other boards with built-in USB CDC serial connection
+    Serial.println("Waiting serial");
+  }
+#endif
+
+  while (usb.Init() == -1) {
+    Serial.println("OSC did not start");
+    delay(1000);  // Halt
   }
 
-  Serial.println("PS4 Bluetooth Library Started");
+  Serial.println("PS4 USB Library Started");
 
   // signalDisplay.begin();
   // signalDisplay.setLevel(0);
@@ -44,8 +59,7 @@ void loop() {
 
 void printTransmitData() {
   Serial.print("Send: ");
-  for (unsigned long i = 0; i < sizeof(transmitData) / sizeof(transmitData[0]);
-       i++) {
+  for (unsigned long i = 0; i < sizeof(transmitData) / sizeof(transmitData[0]); i++) {
     Serial.print(transmitData[i]);
     Serial.print(" ");
   }
@@ -57,8 +71,7 @@ void printRecievedData() {
   // Serial.println(numberOfPackages);
 
   Serial.print("Recieved: ");
-  for (unsigned long i = 0; i < sizeof(recievedData) / sizeof(recievedData[0]);
-       i++) {
+  for (unsigned long i = 0; i < sizeof(recievedData) / sizeof(recievedData[0]); i++) {
     Serial.print(recievedData[i]);
     Serial.print(" ");
   }
@@ -75,11 +88,9 @@ void reset() {
 }
 
 void ps4() {
-
-  Usb.Task();
+  usb.Task();
 
   if (PS4.connected()) {
-
     if (PS4.getAnalogHat(LeftHatX) > 137 || PS4.getAnalogHat(LeftHatX) < 117)
       transmitData[rollIndex] = PS4.getAnalogHat(LeftHatX);
 
@@ -89,30 +100,30 @@ void ps4() {
     if (PS4.getAnalogHat(RightHatX) > 137 || PS4.getAnalogHat(RightHatX) < 117)
       transmitData[yawIndex] = PS4.getAnalogHat(RightHatX);
 
-    // if (PS4.getAnalogButton(L2) || PS4.getAnalogButton(R2)) {
-    //   Serial.print(F("\r\nL2: "));
-    //   Serial.print(PS4.getAnalogButton(L2));
-    //   Serial.print(F("\tR2: "));
-    //   Serial.print(PS4.getAnalogButton(R2));
-    // }
+    if (PS4.getAnalogButton(L2) || PS4.getAnalogButton(R2)) {
+      Serial.print(F("\r\nL2: "));
+      Serial.print(PS4.getAnalogButton(L2));
+      Serial.print(F("\tR2: "));
+      Serial.print(PS4.getAnalogButton(R2));
+    }
 
-    // if (PS4.getAnalogButton(L2) || PS4.getAnalogButton(R2))
-    //   PS4.setRumbleOn(PS4.getAnalogButton(L2), PS4.getAnalogButton(R2));
+    if (PS4.getAnalogButton(L2) || PS4.getAnalogButton(R2))
+      PS4.setRumbleOn(PS4.getAnalogButton(L2), PS4.getAnalogButton(R2));
 
     oldL2Value = PS4.getAnalogButton(L2);
     oldR2Value = PS4.getAnalogButton(R2);
     // Throttle
 
-    // if (PS4.getButtonClick(PS))
-    //   Serial.print(F("\r\nPS"));
-    // if (PS4.getButtonClick(TRIANGLE)) {
-    //   Serial.print(F("\r\nTriangle"));
-    //   PS4.setRumbleOn(RumbleLow);
-    // }
-    // if (PS4.getButtonClick(CIRCLE)) {
-    //   Serial.print(F("\r\nCircle"));
-    //   PS4.setRumbleOn(RumbleHigh);
-    // }
+    if (PS4.getButtonClick(PS))
+      Serial.print(F("\r\nPS"));
+    if (PS4.getButtonClick(TRIANGLE)) {
+      Serial.print(F("\r\nTriangle"));
+      PS4.setRumbleOn(RumbleLow);
+    }
+    if (PS4.getButtonClick(CIRCLE)) {
+      Serial.print(F("\r\nCircle"));
+      PS4.setRumbleOn(RumbleHigh);
+    }
 
     if (PS4.getButtonClick(SQUARE)) {
       // PS4.setLedFlash(0, 0); // Turn off blinking
@@ -124,76 +135,75 @@ void ps4() {
       emergencyStop = false;
     }
 
-    // if (PS4.getButtonClick(UP)) {
-    //   Serial.print(F("\r\nUp"));
-    //   PS4.setLed(Red);
-    // }
-    // if (PS4.getButtonClick(RIGHT)) {
-    //   Serial.print(F("\r\nRight"));
-    //   PS4.setLed(Blue);
-    // }
-    // if (PS4.getButtonClick(DOWN)) {
-    //   Serial.print(F("\r\nDown"));
-    //   PS4.setLed(Yellow);
-    // }
-    // if (PS4.getButtonClick(LEFT)) {
-    //   Serial.print(F("\r\nLeft"));
-    //   PS4.setLed(Green);
-    // }
+    if (PS4.getButtonClick(UP)) {
+      Serial.print(F("\r\nUp"));
+      PS4.setLed(Red);
+    }
+    if (PS4.getButtonClick(RIGHT)) {
+      Serial.print(F("\r\nRight"));
+      PS4.setLed(Blue);
+    }
+    if (PS4.getButtonClick(DOWN)) {
+      Serial.print(F("\r\nDown"));
+      PS4.setLed(Yellow);
+    }
+    if (PS4.getButtonClick(LEFT)) {
+      Serial.print(F("\r\nLeft"));
+      PS4.setLed(Green);
+    }
 
-    // if (PS4.getButtonClick(L1))
-    //   Serial.print(F("\r\nL1"));
-    // if (PS4.getButtonClick(L3))
-    //   Serial.print(F("\r\nL3"));
-    // if (PS4.getButtonClick(R1))
-    //   Serial.print(F("\r\nR1"));
-    // if (PS4.getButtonClick(R3))
-    //   Serial.print(F("\r\nR3"));
+    if (PS4.getButtonClick(L1))
+      // Serial.print(F("\r\nL1"));
+      digitalWrite(LED_BUILTIN, LOW);
+    if (PS4.getButtonClick(L3))
+      Serial.print(F("\r\nL3"));
+    if (PS4.getButtonClick(R1))
+      Serial.print(F("\r\nR1"));
+    if (PS4.getButtonClick(R3))
+      Serial.print(F("\r\nR3"));
 
-    // if (PS4.getButtonClick(SHARE))
-    //   Serial.print(F("\r\nShare"));
-    // if (PS4.getButtonClick(OPTIONS)) {
-    //   Serial.print(F("\r\nOptions"));
-    //   printAngle = !printAngle;
-    // }
-    // if (PS4.getButtonClick(TOUCHPAD)) {
-    //   Serial.print(F("\r\nTouchpad"));
-    //   printTouch = !printTouch;
-    // }
+    if (PS4.getButtonClick(SHARE))
+      Serial.print(F("\r\nShare"));
+    if (PS4.getButtonClick(OPTIONS)) {
+      Serial.print(F("\r\nOptions"));
+      printAngle = !printAngle;
+    }
+    if (PS4.getButtonClick(TOUCHPAD)) {
+      Serial.print(F("\r\nTouchpad"));
+      printTouch = !printTouch;
+    }
 
-    // if (printAngle) { // Print angle calculated using the accelerometer only
-    //   Serial.print(F("\r\nPitch: "));
-    //   Serial.print(PS4.getAngle(Pitch));
-    //   Serial.print(F("\tRoll: "));
-    //   Serial.print(PS4.getAngle(Roll));
-    // }
+    if (printAngle) {  // Print angle calculated using the accelerometer only
+      Serial.print(F("\r\nPitch: "));
+      Serial.print(PS4.getAngle(Pitch));
+      Serial.print(F("\tRoll: "));
+      Serial.print(PS4.getAngle(Roll));
+    }
 
-    // if (printTouch) { // Print the x, y coordinates of the touchpad
-    //   if (PS4.isTouching(0) ||
-    //       PS4.isTouching(1)) // Print newline and carriage return if any of
-    //       the
-    //                          // fingers are touching the touchpad
-    //     Serial.print(F("\r\n"));
-    //   for (uint8_t i = 0; i < 2; i++) { // The touchpad track two fingers
-    //     if (PS4.isTouching(i)) { // Print the position of the finger if it is
-    //                              // touching the touchpad
-    //       Serial.print(F("X"));
-    //       Serial.print(i + 1);
-    //       Serial.print(F(": "));
-    //       Serial.print(PS4.getX(i));
-    //       Serial.print(F("\tY"));
-    //       Serial.print(i + 1);
-    //       Serial.print(F(": "));
-    //       Serial.print(PS4.getY(i));
-    //       Serial.print(F("\t"));
-    //     }
-    //   }
-    // }
+    if (printTouch) {  // Print the x, y coordinates of the touchpad
+      if (PS4.isTouching(0) ||
+          PS4.isTouching(1))  // Print newline and carriage return if any of  the
+        // fingers are touching the touchpad
+        Serial.print(F("\r\n"));
+      for (uint8_t i = 0; i < 2; i++) {  // The touchpad track two fingers
+        if (PS4.isTouching(i)) {         // Print the position of the finger if it
+                                         // is touching the touchpad
+          Serial.print(F("X"));
+          Serial.print(i + 1);
+          Serial.print(F(": "));
+          Serial.print(PS4.getX(i));
+          Serial.print(F("\tY"));
+          Serial.print(i + 1);
+          Serial.print(F(": "));
+          Serial.print(PS4.getY(i));
+          Serial.print(F("\t"));
+        }
+      }
+    }
   }
 }
 
 void radioConnection() {
-
   // signalDemo();
   // blink();  // 2 green, 2 red
 
@@ -205,10 +215,9 @@ void radioConnection() {
   transmitData[rollIndex] = map(transmitData[rollIndex], 0, 255, 0, 180);
   transmitData[pitchIndex] = map(transmitData[pitchIndex], 0, 255, 0, 180);
   transmitData[yawIndex] = map(transmitData[yawIndex], 0, 255, 0, 180);
-  transmitData[throttleIndex] =
-      emergencyStop ? 0
-                    : max(map(oldR2Value, 0, 255, 0, 180),
-                          map(analogRead(sliderPin), 0, 1023, 0, 180));
+  transmitData[throttleIndex] = emergencyStop ? 0
+                                              : max(map(oldR2Value, 0, 255, 0, 180),
+                                                    map(analogRead(sliderPin), 0, 1023, 0, 180));
 
   // batteryLevelDemo(batteryValue);
 

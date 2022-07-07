@@ -14,9 +14,9 @@
 
 #include <Arduino.h>
 // #include <PS4BT.h>
-#include "RF24.h"
 #include <PS4USB.h>
 #include <usbhub.h>
+#include "RF24.h"
 // #include "TM1651.h"
 #include "printf.h"
 /*
@@ -36,10 +36,15 @@
 
 #define sliderPin A0
 
-#define RadioChipEnabled 4
-#define SCN 5
-#define BuzzerPin 6
-#define USBHostSS 10
+// test
+#define RadioChipEnabled 7
+#define SCN 8
+
+// leonardo
+// #define RadioChipEnabled 4
+// #define SCN 5
+// #define BuzzerPin 6
+// #define USBHostSS 10
 
 // Objects
 // Grove_LED_Bar signalDisplay(signalDisplayClockPin, signalDisplayDIOPin,
@@ -63,11 +68,11 @@
 
 #define batteryLevelIndex 0
 
-USB Usb;
+USB usb;
 // USBHub Hub1(&Usb); // Some dongles have a hub inside
 // BTD Btd(&Usb); // You have to create the Bluetooth Dongle instance like so
 
-PS4USB PS4(&Usb);
+PS4USB PS4(&usb);
 
 bool printAngle, printTouch;
 
