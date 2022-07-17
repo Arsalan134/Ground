@@ -18,6 +18,7 @@ void setup() {
   radio.setAutoAck(false);
   radio.setPALevel(RF24_PA_MAX);
   radio.setChannel(112);
+  radio.setCRCLength(RF24_CRC_8);
   radio.openWritingPipe(addresses[1]);
   radio.openReadingPipe(1, addresses[0]);
   radio.setDataRate(RF24_250KBPS);
@@ -34,8 +35,8 @@ void setup() {
 #endif
 
   while (usb.Init() == -1) {
-    Serial.println("OSC did not start");
-    delay(1000);  // Halt
+    Serial.println("PS4 USB Host Failed");
+    delay(500);
   }
 
   Serial.println("PS4 USB Library Started");
@@ -101,28 +102,27 @@ void ps4() {
       transmitData[yawIndex] = PS4.getAnalogHat(RightHatX);
 
     if (PS4.getAnalogButton(L2) || PS4.getAnalogButton(R2)) {
-      Serial.print(F("\r\nL2: "));
-      Serial.print(PS4.getAnalogButton(L2));
-      Serial.print(F("\tR2: "));
-      Serial.print(PS4.getAnalogButton(R2));
+      transmitData[throttleIndex] = PS4.getAnalogButton(R2);
     }
 
-    if (PS4.getAnalogButton(L2) || PS4.getAnalogButton(R2))
-      PS4.setRumbleOn(PS4.getAnalogButton(L2), PS4.getAnalogButton(R2));
+    // if (PS4.getAnalogButton(L2) || PS4.getAnalogButton(R2))
+    // PS4.setRumbleOn(PS4.getAnalogButton(L2), PS4.getAnalogButton(R2));
 
-    oldL2Value = PS4.getAnalogButton(L2);
+    // oldL2Value = PS4.getAnalogButton(L2);
     oldR2Value = PS4.getAnalogButton(R2);
     // Throttle
 
     if (PS4.getButtonClick(PS))
       Serial.print(F("\r\nPS"));
+
     if (PS4.getButtonClick(TRIANGLE)) {
       Serial.print(F("\r\nTriangle"));
-      PS4.setRumbleOn(RumbleLow);
+      // PS4.setRumbleOn(RumbleLow);
     }
+
     if (PS4.getButtonClick(CIRCLE)) {
       Serial.print(F("\r\nCircle"));
-      PS4.setRumbleOn(RumbleHigh);
+      // PS4.setRumbleOn(RumbleHigh);
     }
 
     if (PS4.getButtonClick(SQUARE)) {
@@ -204,6 +204,8 @@ void ps4() {
 }
 
 void radioConnection() {
+  delay(10);
+  
   // signalDemo();
   // blink();  // 2 green, 2 red
 
@@ -227,34 +229,35 @@ void radioConnection() {
   //    emergencyStop = !emergencyStop;
 
   radio.stopListening();
-  if (!radio.write(&transmitData, sizeof(transmitData))) {
-    Serial.println("Failed to transmit 889");
-  } else {
+
+  if (radio.write(&transmitData, sizeof(transmitData))) {
     // printTransmitData();
     radio.startListening();
-  }
-
-  currentTime = millis();
-  elapsedTime = currentTime - lastRecievedTime;
+  } else
+    Serial.println("Failed to transmit 889");
 
   // Signal from Airplane
-  if (radio.available()) {
+  while (radio.available()) {
     radio.read(&recievedData, sizeof(recievedData));
     lastRecievedTime = millis();
     // printRecievedData();
-    PS4.setRumbleOn(0, 0);
+    PS4.setRumbleOff();
     PS4.setLed(emergencyStop ? Blue : Off);
-  } else if (elapsedTime >= timeoutMilliSeconds) {
+  }
+
+  elapsedTime = millis() - lastRecievedTime;
+
+  if (elapsedTime >= timeoutMilliSeconds) {
     // PS4.setRumbleOn(100, 100);
     PS4.setLed(Red);
-    PS4.setLedFlash(50, 50);
+    // PS4.setLedFlash(50, 50);
   } else if (elapsedTime >= timeoutMilliSeconds / 3) {
     // PS4.setRumbleOn(20, 20);
     PS4.setLed(Purple);
   }
 
-  // Serial.print("Elapsed: ");
-  // Serial.println(elapsedTime);
+  Serial.print("Elapsed: ");
+  Serial.println(elapsedTime);
 }
 
 // pinMode(airplaneBatteryDIOPin, OUTPUT);

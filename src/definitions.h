@@ -59,7 +59,7 @@
 #define minAnalogReadFromBattery 750
 #define maxAnalogReadFromBattery 1000
 
-#define timeoutMilliSeconds 500
+#define timeoutMilliSeconds 1000
 
 #define rollIndex 0
 #define pitchIndex 1
