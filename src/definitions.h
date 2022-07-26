@@ -6,12 +6,6 @@
 // #define signalDisplayDIOPin 4
 // #define signalDisplayClockPin 5
 
-/*
- Example sketch for the PS4 USB library - developed by Kristian Lauszus
- For more information visit my blog: http://blog.tkjelectronics.dk/ or
- send me an e-mail:  kristianl@tkjelectronics.com
- */
-
 #include <Arduino.h>
 // #include <PS4BT.h>
 #include <PS4USB.h>
@@ -65,6 +59,7 @@
 #define pitchIndex 1
 #define yawIndex 2
 #define throttleIndex 3
+#define autopilotIsOnIndex 4
 
 #define batteryLevelIndex 0
 
@@ -80,10 +75,10 @@ RF24 radio(RadioChipEnabled, SCN);
 
 byte addresses[][6] = {"1Node", "2Node"};
 
-byte transmitData[4];
+byte transmitData[5];
 byte recievedData[1];
 
-byte oldL2Value = 0, oldR2Value = 0;
+byte L2Value = 0, R2Value = 0;
 
 unsigned long lastRecievedTime = millis();
 unsigned long currentTime = millis();
@@ -91,7 +86,9 @@ unsigned long elapsedTime = 0;
 
 bool emergencyStop = false;
 
-void printTransmitData();
+bool autopilotIsOn = false;
+
+void printTransmissionData();
 void printRecievedData();
 void reset();
 void ps4();
