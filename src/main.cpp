@@ -89,6 +89,8 @@ void reset() {
   transmitData[yawIndex] = 127;
 
   transmitData[autopilotIsOnIndex] = false;
+
+  // lets make 90 a new '0' because I need to send negative numbers
 }
 
 void ps4() {
@@ -129,19 +131,15 @@ void ps4() {
       // PS4.setLedFlash(10, 10); // Set it to blink rapidly
       emergencyStop = false;
 
-    // if (PS4.getButtonClick(UP)) {
-    //   Serial.print(F("\r\nUp"));
-    //   PS4.setLed(Red);
-    // }
+    if (PS4.getButtonClick(UP))
+      pitchBias += pitchBiasStep;
+
+    if (PS4.getButtonClick(DOWN))
+      pitchBias -= pitchBiasStep;
 
     // if (PS4.getButtonClick(RIGHT)) {
     //   Serial.print(F("\r\nRight"));
     //   PS4.setLed(Blue);
-    // }
-
-    // if (PS4.getButtonClick(DOWN)) {
-    //   Serial.print(F("\r\nDown"));
-    //   PS4.setLed(Yellow);
     // }
 
     // if (PS4.getButtonClick(LEFT)) {
@@ -219,6 +217,10 @@ void radioConnection() {
   transmitData[throttleIndex] = emergencyStop ? 0
                                               : max(map(R2Value, 0, 255, 0, 180),
                                                     map(analogRead(sliderPin), 0, 1023, 0, 180));
+
+  pitchBias = constrain(pitchBias, 90 - 45, 90 + 45);
+
+  transmitData[pitchBiasIndex] = pitchBias;
 
   // batteryLevelDemo(batteryValue);
 
