@@ -7,12 +7,12 @@
 // #define signalDisplayClockPin 5
 
 #include <Arduino.h>
-// #include <PS4BT.h>
+
 #include <PS4USB.h>
-#include <usbhub.h>
 #include "RF24.h"
+
+// #include <PS4BT.h>
 // #include "TM1651.h"
-#include "printf.h"
 /*
  * 2    SDA
  * 3    SCL
@@ -49,7 +49,6 @@
 
 // Constants
 #define delayTime 10
-#define miniDelay 5
 #define minAnalogReadFromBattery 750
 #define maxAnalogReadFromBattery 1000
 
@@ -85,17 +84,19 @@ byte pitchBias = 90;
 #define pitchBiasStep 2
 
 unsigned long lastRecievedTime = millis();
-unsigned long currentTime = millis();
-unsigned long elapsedTime = 0;
 
-bool emergencyStop = false;
+bool emergencyStop = true;
 
-bool autopilotIsOn = false;
+void setupRadio();
+void usbHostSetup();
 
 void printTransmissionData();
 void printRecievedData();
 void reset();
 void ps4();
+
+void setLEDColor();
+
 void radioConnection();
 
 // int numberOfPackages = 0;
