@@ -1,17 +1,14 @@
 PS4 button 
 
-[]  emergency stop enabled, color red
-()  
-/\  auto pilot
-X   emergency stop disabled, color off
+/\  Autopilot Turn On, color blue
+[]  Autopilot Turn Off
+()  Emergency Stop Turn On, color red
+X   Emergency Stop Turn Off 
 
-left joystick       roll
+left joystick  x     roll
 right joystick x    yaw
 right joystick y    pitch
-
-    Colors:
-Purple = Signal Loss
-Red = Emergency stop
+ 
 
 
 
