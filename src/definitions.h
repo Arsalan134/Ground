@@ -9,6 +9,7 @@
 #include <Arduino.h>
 
 #include <PS4USB.h>
+#include <printf.h>
 #include "RF24.h"
 
 // #include <PS4BT.h>
@@ -69,7 +70,7 @@ USB usb;
 
 PS4USB PS4(&usb);
 
-bool printAngle, printTouch;
+bool PS4AccelerometerEnabled, printTouch;
 
 RF24 radio(RadioChipEnabled, SCN);
 

@@ -3,20 +3,19 @@
 void setup() {
   Serial.begin(115200);
 
-  // #if !defined(__MIPSEL__)
-  //   while (!Serial) {
-  //     delay(100);  // Wait for serial port to connect - used on Leonardo, Teensy
-  //                  // and other boards with built-in USB CDC serial connection
-  //     Serial.println("Waiting serial ...");
-  //   }
-  // #endif
+#if !defined(__MIPSEL__)
+  while (!Serial) {
+    delay(100);  // Wait for serial port to connect - used on Leonardo, Teensy
+                 // and other boards with built-in USB CDC serial connection
+    Serial.println("Waiting serial ...");
+  }
+#endif
 
   // pinMode(LED_BUILTIN, OUTPUT);
   // digitalWrite(LED_BUILTIN, HIGH);  // Turn Of LED
 
-  setupRadio();
-
   usbHostSetup();
+  setupRadio();
 }
 
 void loop() {
@@ -28,7 +27,7 @@ void loop() {
 }
 
 void setupRadio() {
-  // printf_begin();
+  printf_begin();
 
   while (!radio.begin()) {
     Serial.println("Radio hardware is not responding!");
@@ -89,17 +88,13 @@ void reset() {
   transmitData[yawIndex] = 90;
 
   transmitData[autopilotIsOnIndex] = false;
-
-  // lets make 90 a new '0' because I need to send negative numbers
 }
 
 void ps4() {
   usb.Task();
 
   transmitData[rollIndex] = map(PS4.getAnalogHat(LeftHatX), 0, 255, 0, 180);
-
   transmitData[pitchIndex] = map(PS4.getAnalogHat(RightHatY), 0, 255, 0, 180);
-
   transmitData[yawIndex] = map(PS4.getAnalogHat(RightHatX), 0, 255, 0, 180);
 
   R2Value = PS4.getAnalogButton(R2);
@@ -108,25 +103,26 @@ void ps4() {
     Serial.print(F("\r\nPS"));
 
   if (PS4.getButtonClick(TRIANGLE))
-    transmitData[autopilotIsOnIndex] = true;
+    transmitData[autopilotIsOnIndex] = !transmitData[autopilotIsOnIndex];
 
-  if (PS4.getButtonClick(SQUARE))
-    transmitData[autopilotIsOnIndex] = false;
+  // if (PS4.getButtonClick(SQUARE)) {}
 
   if (PS4.getButtonClick(CIRCLE))
-    emergencyStop = true;
+    emergencyStop = !emergencyStop;
 
-  if (PS4.getButtonClick(CROSS))
+  if (PS4.getButtonClick(CROSS)) {
     emergencyStop = false;
+    transmitData[autopilotIsOnIndex] = false;
+    PS4AccelerometerEnabled = false;
+  }
 
   if (PS4.getButtonClick(UP))
     pitchBias += pitchBiasStep;
-
   if (PS4.getButtonClick(DOWN))
     pitchBias -= pitchBiasStep;
 
   if (PS4.getButtonClick(OPTIONS))
-    printAngle = !printAngle;
+    PS4AccelerometerEnabled = !PS4AccelerometerEnabled;
 
   // if (PS4.getButtonClick(RIGHT)) {
   //   Serial.print(F("\r\nRight"));
@@ -157,9 +153,9 @@ void ps4() {
   //   printTouch = !printTouch;
   // }
 
-  if (printAngle) {
+  if (PS4AccelerometerEnabled) {
     transmitData[rollIndex] = map(constrain(PS4.getAngle(Roll), 90, 270), 270, 90, 0, 180);
-    // transmitData[pitchIndex] = map(PS4.getAngle(Pitch), 0, 360, 0, 180);
+    transmitData[pitchIndex] = map(constrain(PS4.getAngle(Pitch), 90, 270), 270, 90, 0, 180);
   }
 
   // if (printTouch) {                              // Print the x, y coordinates of the touchpad
@@ -187,7 +183,7 @@ void ps4() {
 void setLEDColor() {
   ColorsEnum ps4Color = Off;
 
-  if (printAngle)
+  if (PS4AccelerometerEnabled)
     ps4Color = White;
 
   if (transmitData[autopilotIsOnIndex])
