@@ -60,7 +60,7 @@
 #define yawIndex 2
 #define throttleIndex 3
 #define autopilotIsOnIndex 4
-#define pitchBiasIndex 5
+#define trimIndex 5
 
 #define batteryLevelIndex 0
 
@@ -81,12 +81,12 @@ byte recievedData[1];
 
 byte L2Value = 0, R2Value = 0;
 
-byte pitchBias = 90;
-#define pitchBiasStep 2
+byte trim = 90;
+#define trimStep 2
 
 unsigned long lastRecievedTime = millis();
 
-bool emergencyStop = true;
+bool emergencyStopIsActive = true;
 
 void setupRadio();
 void usbHostSetup();

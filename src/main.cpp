@@ -1,4 +1,4 @@
-#include "definitions.h"
+#include "main.h"
 
 void setup() {
   Serial.begin(115200);
@@ -97,6 +97,7 @@ void ps4() {
   transmitData[pitchIndex] = map(PS4.getAnalogHat(RightHatY), 0, 255, 0, 180);
   transmitData[yawIndex] = map(PS4.getAnalogHat(RightHatX), 0, 255, 0, 180);
 
+  L2Value = PS4.getAnalogButton(L2);
   R2Value = PS4.getAnalogButton(R2);
 
   if (PS4.getButtonClick(PS))
@@ -105,21 +106,20 @@ void ps4() {
   if (PS4.getButtonClick(TRIANGLE))
     transmitData[autopilotIsOnIndex] = !transmitData[autopilotIsOnIndex];
 
-  // if (PS4.getButtonClick(SQUARE)) {}
-
   if (PS4.getButtonClick(CIRCLE))
-    emergencyStop = !emergencyStop;
+    emergencyStopIsActive = !emergencyStopIsActive;
 
   if (PS4.getButtonClick(CROSS)) {
-    emergencyStop = false;
+    emergencyStopIsActive = false;
     transmitData[autopilotIsOnIndex] = false;
     PS4AccelerometerEnabled = false;
   }
 
   if (PS4.getButtonClick(UP))
-    pitchBias += pitchBiasStep;
+    trim += trimStep;
+
   if (PS4.getButtonClick(DOWN))
-    pitchBias -= pitchBiasStep;
+    trim -= trimStep;
 
   if (PS4.getButtonClick(OPTIONS))
     PS4AccelerometerEnabled = !PS4AccelerometerEnabled;
@@ -189,7 +189,7 @@ void setLEDColor() {
   if (transmitData[autopilotIsOnIndex])
     ps4Color = Lightblue;
 
-  if (emergencyStop)
+  if (emergencyStopIsActive)
     ps4Color = Red;
 
   if (millis() - lastRecievedTime >= timeoutMilliSeconds) {
@@ -205,13 +205,12 @@ void setLEDColor() {
 }
 
 void radioConnection() {
-  transmitData[throttleIndex] = emergencyStop ? 0
-                                              : max(map(R2Value, 0, 255, 0, 180),
-                                                    map(analogRead(sliderPin), 0, 1023, 0, 180));
+  transmitData[throttleIndex] =
+      emergencyStopIsActive ? 0 : max(map(L2Value, 0, 255, 0, 90), map(R2Value, 0, 255, 0, 180));
 
-  pitchBias = constrain(pitchBias, 90 - 45, 90 + 45);
+  trim = constrain(trim, 90 - 45, 90 + 45);
 
-  transmitData[pitchBiasIndex] = pitchBias;
+  transmitData[trimIndex] = trim;
 
   radio.stopListening();
 
